@@ -36,11 +36,20 @@ def map_feature(X1, X2, degree=6):
 # GRADED CELL: my_softmax
 def my_softmax(z):
     """ Softmax converts a vector of values to a probability distribution.
+    Handles both 1D and 2D arrays (applies softmax row-wise for 2D).
     Args:
-      z (ndarray (N,))  : input data, N features
+      z (ndarray (N,) or (m, K))  : input data, N features or m examples with K classes
     Returns:
-      a (ndarray (N,))  : softmax of z
+      a (ndarray (N,) or (m, K))  : softmax of z
     """
+    # Handle 2D arrays (apply softmax row-wise)
+    if z.ndim == 2:
+        # For numerical stability, subtract max from each row
+        z_shifted = z - np.max(z, axis=1, keepdims=True)
+        exp_z = np.exp(z_shifted)
+        return exp_z / np.sum(exp_z, axis=1, keepdims=True)
+    
+    # Handle 1D arrays (original implementation)
     ### START CODE HERE ###
     N = len(z)
     a = np.zeros(N)
