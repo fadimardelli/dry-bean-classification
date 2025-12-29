@@ -272,9 +272,9 @@ class LogisticRegression_lr:
             
         return dj_dw_history, dj_db_history, w_in, b_in, J_history, w_history #return w and J,w history for graphing
 
-    def gradient_descent_softmax(self, X, Y_one_hot, initial_all_w, initial_all_b, alpha, num_iters):
+    def gradient_descent_softmax(self, X, Y_one_hot, initial_all_w, initial_all_b, alpha, num_iters, lambda_=0.0):
         """
-        Performs batch gradient descent for Softmax Regression.
+        Performs batch gradient descent for Softmax Regression with optional L2 regularization.
         
         Args:
         X (ndarray (m, n)): Input features.
@@ -283,6 +283,7 @@ class LogisticRegression_lr:
         initial_all_b (ndarray (K, 1)): Initial bias vector.
         alpha (float): Learning rate.
         num_iters (int): Number of iterations.
+        lambda_ (float): Regularization parameter (default 0.0, no regularization).
         
         Returns:
         all_w (ndarray (K, n)): Final learned weights matrix.
@@ -309,10 +310,16 @@ class LogisticRegression_lr:
             # Reusing the my_softmax function defined earlier
             A = my_softmax(Z) 
             
-            # 2. Calculate Cost (Categorical Cross-Entropy - Optional but good for tracking)
+            # 2. Calculate Cost (Categorical Cross-Entropy with optional L2 regularization)
             # CCE Loss: J = -1/m * sum(Y_one_hot * log(A))
             # Note: Added a tiny epsilon to log(A) for numerical stability if needed
             cost = -np.sum(Y_one_hot * np.log(A + 1e-9)) / m
+            
+            # Add L2 regularization term if lambda_ > 0
+            if lambda_ > 0:
+                reg_cost = (lambda_ / (2 * m)) * np.sum(all_w ** 2)
+                cost += reg_cost
+            
             J_history.append(cost)
 
             # 3. Calculate Gradients (Backward Propagation)
@@ -324,6 +331,10 @@ class LogisticRegression_lr:
             # Gradient for Weights (dW) - (K, n)
             # dW = 1/m * G.T @ X
             dW = (1 / m) * G.T @ X
+            
+            # Add L2 regularization gradient if lambda_ > 0
+            if lambda_ > 0:
+                dW = dW + (lambda_ / m) * all_w
             
             # Gradient for Biases (db) - (K, 1)
             # db = 1/m * sum(G along axis 0)
